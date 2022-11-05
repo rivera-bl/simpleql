@@ -1,15 +1,19 @@
 #!/bin/sh
 
-# TODO use flags
+# TODO use argument flags
 
-db_file=$1
-tables_file=$2
-csv_folder=/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/
+db_name=example
+dbs_folder="/tmp/simpleql/dbs"
+db_file=$dbs_folder/$db_name.db
+csv_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/"
+tables_file="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
 
-# # generate tables
-cat "$tables_file" | sqlite3 $db_file 
+mkdir -p $dbs_folder
 
-# # import values from folder of .csv
+# create database with tables
+cat "$tables_file" | sqlite3 $db_file
+
+# import values from folder of .csv
 csv_files=$(find $csv_folder -type f -name '*.csv')
 while read line; do 
   table_name=$(basename $line | awk -F '.' '{print $1}');
@@ -17,6 +21,12 @@ while read line; do
     ".mode csv" ".import $line $table_name"
 done <<< $csv_files
 
-# # delete database
+# delete database
+rm $db_file
 
-# # show all tables with headers and table format
+# list databases
+ls -l $dbs_folder
+
+# show all tables with headers and table format
+
+# --help
