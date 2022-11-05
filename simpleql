@@ -1,6 +1,22 @@
 #!/bin/sh
 
+# TODO use flags
+
 db_file=$1
 tables_file=$2
+csv_folder=/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/
 
+# # generate tables
 cat "$tables_file" | sqlite3 $db_file 
+
+# # import values from folder of .csv
+csv_files=$(find $csv_folder -type f -name '*.csv')
+while read line; do 
+  table_name=$(basename $line | awk -F '.' '{print $1}');
+  sqlite3 $db_file \
+    ".mode csv" ".import $line $table_name"
+done <<< $csv_files
+
+# # delete database
+
+# # show all tables with headers and table format
