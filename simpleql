@@ -1,41 +1,47 @@
 #!/usr/bin/env bash
 
-# setup
-script_path="sh ~/code/github/simpleql/simpleql"
 db_name=example
 dbs_folder="/tmp/simpleql/dbs"
-db_file=$dbs_folder/$db_name.db
 csv_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/"
 command="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
-
 mkdir -p $dbs_folder
 
 print_usage() {
   printf "Usage: ..."
+	# run sql command, if -d not passed then save to $db_name.db
+	# simplesql -d $db_name -c $command|file.sql
+	# insert values from folder of .csv
+	# simpleql -d $db_name -i $csv_folder
 }
 
 values_insert() {
-	cat $1 | sqlite3 $db_file
+	cat $1 | sqlite3 $dbs_folder/${2:-$db_name}.db
+}
+
+values_csv(){
+  csv_files=$(find $1 -type f -name '*.csv')
+  while read line; do 
+    table_name=$(basename $line | awk -F '.' '{print $1}');
+    sqlite3 $dbs_folder/${2:-$db_name}.db \
+      ".mode csv" ".import $line $table_name"
+  done <<< $csv_files
 }
 
 while getopts 'd:c:i:' flag; do
   case "${flag}" in
-		d) d_flag="${OPTARG}" ;;
+		d) database="${OPTARG}" ;;
     c) command="${OPTARG}" 
-			 	values_insert $command
+			 	values_insert $command $database 
 				exit 1;;
-    i) i_flag="${OPTARG}" ;;
+    i) csv_folder="${OPTARG}" 
+				values_csv $csv_folder $database
+				exit 1;;
     *) print_usage 
 				exit 1;;
   esac
 done
 
-# # create database with tables
-# # simpleql -d $db_name -t $command
-# # if no first argument then load to transient
-# cat "$command" | sqlite3 $db_file
-
-# run this if no argument passed
+# if no argument passed
 FZF_DEFAULT_COMMAND="
 	find $dbs_folder -iname '*.db' \
 	-execdir basename -s '.sh' {} + | \
@@ -53,17 +59,5 @@ fzf \
 	--preview-window right,hidden,60% \
 	--preview '' "$@"
 
-# insert values from folder of .csv
-# simpleql $db_name -i $csv_folder
-function _values_csv(){
-  csv_files=$(find $csv_folder -type f -name '*.csv')
-  while read line; do 
-    table_name=$(basename $line | awk -F '.' '{print $1}');
-    sqlite3 $db_file \
-      ".mode csv" ".import $line $table_name"
-  done <<< $csv_files
-}
-
-# # encrypt database
-# # show all tables with headers and table format
-# # --help
+# TODO encrypt database
+# TODO show all tables with headers and table format
