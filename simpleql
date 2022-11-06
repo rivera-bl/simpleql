@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-db_name=example
 dbs_folder="/tmp/simpleql/dbs"
 csv_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/"
 command="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
@@ -16,10 +15,11 @@ If ran without options, it lists .db files with fzf.
 Examples:
 	simpleql -d example -c ./db/tables.sql  # Execute .sql script on example.db.
 	simpleql -d example -i ./db/values      # Insert .csv values on example.db tables.
-	simpleql -d example -s users            # Select * from example.db users table.
+	simpleql -s users                       # Select * from \${SIMPLEQL_DEFAULT_DB} users table.
 
 Options:
-	-d database name in which to execute actions
+	-d database name in which to execute actions;
+      if this flag is not used then it takes the db name from \${SIMPLEQL_DEFAULT_DB}
 	-c .sql file to run against a database
 	-s select * from a table
 	-i folder of .csv files to insert into database; 
@@ -28,34 +28,34 @@ Options:
 }
 
 select_all(){
-  sqlite3 -column -header $dbs_folder/${2:-$db_name}.db  "select * from $1;" 
+  sqlite3 -column -header $dbs_folder/${2}.db  "select * from $1;" 
 }
 
 # TODO show summary of insert
 insert_command() {
-	cat $1 | sqlite3 $dbs_folder/${2:-$db_name}.db
+	cat $1 | sqlite3 $dbs_folder/${2}.db
 }
 
 insert_csv(){
   csv_files=$(find $1 -type f -name '*.csv')
   while read line; do 
     table_name=$(basename $line | awk -F '.' '{print $1}');
-    sqlite3 $dbs_folder/${2:-$db_name}.db \
+    sqlite3 $dbs_folder/${2}.db \
       ".mode csv" ".import $line $table_name"
   done <<< $csv_files
 }
 
 while getopts 'hd:c:s:i:' flag; do
   case "${flag}" in
-		d) database="${OPTARG}" ;;
+		d) database="${OPTARG}";;
     c) command="${OPTARG}" 
-			 	insert_command $command $database 
+			 	insert_command $command ${database:-$SIMPLEQL_DEFAULT_DB}
 				exit 1;;
     i) csv_folder="${OPTARG}" 
-				insert_csv $csv_folder $database
+				insert_csv $csv_folder ${database:-$SIMPLEQL_DEFAULT_DB}
 				exit 1;;
     s) table="${OPTARG}" 
-				select_all $table $database
+				select_all $table ${database:-$SIMPLEQL_DEFAULT_DB}
 				exit 1;;
 		h) print_usage
 				exit 1;;
