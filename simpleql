@@ -7,11 +7,21 @@ command="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
 mkdir -p $dbs_folder
 
 print_usage() {
-  printf "Usage: ..."
-	# run sql command, if -d not passed then save to $db_name.db
-	# simplesql -d $db_name -c $command|file.sql
-	# insert values from folder of .csv
-	# simpleql -d $db_name -i $csv_folder
+  printf "
+Usage: simpleql [OPTION...] 
+Easily manage sqlite3 databases. By default .db files are saved to "$dbs_folder".
+If ran without options, it lists .db files with fzf.
+
+Examples:
+	simpleql -d my-db -c ./db/tables.sql  # Execute .sql script on my-db database.
+	simpleql -d my-db -i ./db/values      # Insert .csv values on my-db database.tables.
+
+Options:
+	-d database name in which to execute actions
+	-c .sql file to run against a database
+	-i folder of .csv files to insert into database; 
+       .csv filename must be the same as the database.table
+	-h print usage" | bat -l help
 }
 
 values_insert() {
@@ -27,7 +37,7 @@ values_csv(){
   done <<< $csv_files
 }
 
-while getopts 'd:c:i:' flag; do
+while getopts 'hd:c:i:' flag; do
   case "${flag}" in
 		d) database="${OPTARG}" ;;
     c) command="${OPTARG}" 
@@ -35,6 +45,8 @@ while getopts 'd:c:i:' flag; do
 				exit 1;;
     i) csv_folder="${OPTARG}" 
 				values_csv $csv_folder $database
+				exit 1;;
+		h) print_usage
 				exit 1;;
     *) print_usage 
 				exit 1;;
