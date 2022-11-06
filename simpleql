@@ -26,12 +26,14 @@ Options:
 }
 
 select_all(){
-  sqlite3 -column -header $dbs_folder/${2}.db  "select * from $1;" 
+  [[ ! -z "$2" ]] && 
+		sqlite3 -column -header $dbs_folder/${2}.db  "select * from $1;" 
 }
 
 # TODO show summary of insert
 insert_command() {
-	cat $1 | sqlite3 $dbs_folder/${2}.db
+	[[ ! -z "$2" ]] && 
+		cat $1 | sqlite3 $dbs_folder/${2}.db
 }
 
 insert_csv(){
@@ -39,24 +41,21 @@ insert_csv(){
   while read line; do 
     table_name=$(basename $line | awk -F '.' '{print $1}');
     sqlite3 $dbs_folder/${2}.db \
-      ".mode csv" ".import $line $table_name"
+      ".import --csv $line $table_name"
   done <<< $csv_files
 }
 
+# TODO fix unknown option message
 while getopts 'hd:c:s:i:' flag; do
   case "${flag}" in
 		d) database="${OPTARG}";;
     c) command="${OPTARG}" 
-			 	insert_command $command ${database:-$SIMPLEQL_DEFAULT_DB}
-				exit 1;;
+			 	insert_command $command ${database:-$SIMPLEQL_DEFAULT_DB} ;;
     i) csv_folder="${OPTARG}" 
-				insert_csv $csv_folder ${database:-$SIMPLEQL_DEFAULT_DB}
-				exit 1;;
+				insert_csv $csv_folder ${database:-$SIMPLEQL_DEFAULT_DB} ;;
     s) table="${OPTARG}" 
-				select_all $table ${database:-$SIMPLEQL_DEFAULT_DB}
-				exit 1;;
-		h) print_usage
-				exit 1;;
+				select_all $table ${database:-$SIMPLEQL_DEFAULT_DB} ;;
+		h) print_usage ;;
     *) print_usage 
 				exit 1;;
   esac
