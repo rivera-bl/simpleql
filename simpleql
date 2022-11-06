@@ -19,16 +19,22 @@ Examples:
 Options:
 	-d database name in which to execute actions
 	-c .sql file to run against a database
+	-s select * from a table
 	-i folder of .csv files to insert into database; 
        .csv filename must be the same as the database.table
 	-h print usage" | bat -l help
 }
 
-values_insert() {
+select_all(){
+  sqlite3 -column -header $dbs_folder/${2:-$db_name}.db  "select * from $1;" 
+}
+
+# TODO show summary of insert
+insert_command() {
 	cat $1 | sqlite3 $dbs_folder/${2:-$db_name}.db
 }
 
-values_csv(){
+insert_csv(){
   csv_files=$(find $1 -type f -name '*.csv')
   while read line; do 
     table_name=$(basename $line | awk -F '.' '{print $1}');
@@ -37,14 +43,17 @@ values_csv(){
   done <<< $csv_files
 }
 
-while getopts 'hd:c:i:' flag; do
+while getopts 'hd:c:s:i:' flag; do
   case "${flag}" in
 		d) database="${OPTARG}" ;;
     c) command="${OPTARG}" 
-			 	values_insert $command $database 
+			 	insert_command $command $database 
 				exit 1;;
     i) csv_folder="${OPTARG}" 
-				values_csv $csv_folder $database
+				insert_csv $csv_folder $database
+				exit 1;;
+    s) table="${OPTARG}" 
+				select_all $table $database
 				exit 1;;
 		h) print_usage
 				exit 1;;
@@ -53,6 +62,7 @@ while getopts 'hd:c:i:' flag; do
   esac
 done
 
+# TODO table show last modified date
 FZF_DEFAULT_COMMAND="
 	find $dbs_folder -iname '*.db' \
 	-execdir basename -s '.sh' {} + | \
