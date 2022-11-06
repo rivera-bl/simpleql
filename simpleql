@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # setup
 script_path="sh ~/code/github/simpleql/simpleql"
@@ -6,48 +6,52 @@ db_name=example
 dbs_folder="/tmp/simpleql/dbs"
 db_file=$dbs_folder/$db_name.db
 csv_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values/"
-tables_file="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
-
-# # getops is from bash
-# # flags
-# t_flag=''
-# i_flag=''
-
-# while getopts 't:i:' flag; do
-#   case "${flag}" in
-#     t) t_flag="${OPTARG}" ;;
-#     f) i_flag="${OPTARG}" ;;
-#     *) $script_path _dbs
-#        exit 1 ;;
-#   esac
-# done
+command="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/tables.sql"
 
 mkdir -p $dbs_folder
 
+print_usage() {
+  printf "Usage: ..."
+}
+
+values_insert() {
+	cat $1 | sqlite3 $db_file
+}
+
+while getopts 'd:c:i:' flag; do
+  case "${flag}" in
+		d) d_flag="${OPTARG}" ;;
+    c) command="${OPTARG}" 
+			 	values_insert $command
+				exit 1;;
+    i) i_flag="${OPTARG}" ;;
+    *) print_usage 
+				exit 1;;
+  esac
+done
+
 # # create database with tables
-# # simpleql $db_name -t $tables_file
+# # simpleql -d $db_name -t $command
 # # if no first argument then load to transient
-# cat "$tables_file" | sqlite3 $db_file
+# cat "$command" | sqlite3 $db_file
 
 # run this if no argument passed
-function _dbs(){
-  FZF_DEFAULT_COMMAND="
-    find $dbs_folder -iname '*.db' \
-    -execdir basename -s '.sh' {} + | \
-    sed '1i file' | column -t" \
-  fzf \
-    --header-lines=1 \
-    --info=inline \
-    --layout=reverse \
-    --height 60% \
-    --prompt "sqlite> " \
-    --header $'╱ enter (load); ctrl-d (delete)╱\n\n' \
-      --bind "enter:execute(tmux send-keys 'sqlite3 $dbs_folder/{1}' Enter)+abort" \
-      --bind "ctrl-d:execute($script_path _db_delete {1})+abort" \
-      --bind 'ctrl-space:toggle-preview' \
-    --preview-window right,hidden,60% \
-    --preview '' "$@"
-}
+FZF_DEFAULT_COMMAND="
+	find $dbs_folder -iname '*.db' \
+	-execdir basename -s '.sh' {} + | \
+	sed '1i file' | column -t" \
+fzf \
+	--header-lines=1 \
+	--info=inline \
+	--layout=reverse \
+	--height 60% \
+	--prompt "sqlite> " \
+	--header $'╱ enter (load); ctrl-d (delete)╱\n\n' \
+		--bind "enter:execute(tmux send-keys 'sqlite3 $dbs_folder/{1}' Enter)+abort" \
+		--bind "ctrl-d:execute(rm $dbs_folder/{1})+abort" \
+		--bind 'ctrl-space:toggle-preview' \
+	--preview-window right,hidden,60% \
+	--preview '' "$@"
 
 # insert values from folder of .csv
 # simpleql $db_name -i $csv_folder
@@ -60,13 +64,6 @@ function _values_csv(){
   done <<< $csv_files
 }
 
-# delete database
-function _db_delete(){
-  rm $dbs_folder/$1
-}
-
 # # encrypt database
 # # show all tables with headers and table format
 # # --help
-
-"$@"
