@@ -14,8 +14,6 @@ sh ~/code/github/simpleql/simpleql \
 
 ### TODO
 
-- [ ] argument to insert values of folder of .csv
-- [ ] argument for type of action (create,delete,show)
 - [ ] argument to show query output as table
 - [ ] argument to pass location where to sabe de .db file if it doesn't exist
-- [ ] --help
+- [ ] check ~/.sqliterc

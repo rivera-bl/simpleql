@@ -14,7 +14,7 @@ If ran without options, it lists .db files with fzf.
 
 Examples:
 	simpleql -d my-db -c ./db/tables.sql  # Execute .sql script on my-db database.
-	simpleql -d my-db -i ./db/values      # Insert .csv values on my-db database.tables.
+	simpleql -d my-db -i ./db/values      # Insert .csv values on my-db tables.
 
 Options:
 	-d database name in which to execute actions
@@ -53,7 +53,6 @@ while getopts 'hd:c:i:' flag; do
   esac
 done
 
-# if no argument passed
 FZF_DEFAULT_COMMAND="
 	find $dbs_folder -iname '*.db' \
 	-execdir basename -s '.sh' {} + | \
