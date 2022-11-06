@@ -9,12 +9,14 @@ mkdir -p $dbs_folder
 print_usage() {
   printf "
 Usage: simpleql [OPTION...] 
-Easily manage sqlite3 databases. By default .db files are saved to "$dbs_folder".
+Easily manage sqlite3 databases.
+By default .db files are saved to "$dbs_folder".
 If ran without options, it lists .db files with fzf.
 
 Examples:
-	simpleql -d my-db -c ./db/tables.sql  # Execute .sql script on my-db database.
-	simpleql -d my-db -i ./db/values      # Insert .csv values on my-db tables.
+	simpleql -d example -c ./db/tables.sql  # Execute .sql script on example.db.
+	simpleql -d example -i ./db/values      # Insert .csv values on example.db tables.
+	simpleql -d example -s users            # Select * from example.db users table.
 
 Options:
 	-d database name in which to execute actions
@@ -81,4 +83,3 @@ fzf \
 	--preview '' "$@"
 
 # TODO encrypt database
-# TODO show all tables with headers and table format
