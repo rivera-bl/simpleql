@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-dbs_folder="/tmp/simpleql/dbs"
+dbs_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/"
+csv_files="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values"
 mkdir -p $dbs_folder
 
 print_usage() {
