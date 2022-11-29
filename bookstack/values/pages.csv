@@ -1,1 +1,2 @@
-id,file
+id,filename,pagename,filepath,book_id
+148,upgrade-airflow.md,Upgrade Airflow,/Users/pablorrivera/notes/paris-bookstack/devops,16
