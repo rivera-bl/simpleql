@@ -9,7 +9,7 @@
 1. set `$SIMPLEQL_DEFAULT_DB` name in `.envrc`
 2. run `./simpleql -h` to see the options
 3. create a `$tablename.csv` (with headers) inside `$SIMPLEQL_DEFAULT_DB/values` directory
-4. run `./simpleql -i $tablename.csv` to create the table and insert the values
+4. run `./simpleql -i $SIMPLEQL_DEFAULT_DB/values` to create the table and insert the values
 5. run `./simpleql -s $tablename` to check the inserted values
 
 ## Known Issues
