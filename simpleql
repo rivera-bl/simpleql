@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-dbs_folder="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/"
-csv_files="/home/wim/code/github/k8-conf-mgmnt/docs/discovery/db/values"
-mkdir -p $dbs_folder
+mkdir -p $SIMPLEQL_DBS_DIR/values
 
 print_usage() {
   printf "
 Usage: simpleql [OPTION...] 
 Easily manage sqlite3 databases.
-By default .db files are saved to "$dbs_folder".
+By default .db files are saved to \${SIMPLEQL_DBS_DIR}.
 If ran without options, it lists .db files with fzf.
 
 Examples:
@@ -28,20 +26,25 @@ Options:
 
 select_all(){
   [[ ! -z "$2" ]] && 
-		sqlite3 -column -header $dbs_folder/${2}.db  "select * from $1;" 
+		sqlite3 -column -header $SIMPLEQL_DBS_DIR/${2}.db  "select * from $1;" 
 }
 
 # TODO show summary of insert
 insert_command() {
 	[[ ! -z "$2" ]] && 
-		cat $1 | sqlite3 $dbs_folder/${2}.db
+		cat $1 | sqlite3 $SIMPLEQL_DBS_DIR/${2}.db
 }
 
+# TODO use the default dir if no argument passed to -i
 insert_csv(){
   csv_files=$(find $1 -type f -name '*.csv')
   while read line; do 
     table_name=$(basename $line | awk -F '.' '{print $1}');
-    sqlite3 $dbs_folder/${2}.db \
+    # drop table if exists
+    sqlite3 $SIMPLEQL_DBS_DIR/${2}.db  \
+      "drop table if exists $table_name;" 
+    # create table with values
+    sqlite3 $SIMPLEQL_DBS_DIR/${2}.db \
       ".import --csv $line $table_name"
   done <<< $csv_files
 }
@@ -64,7 +67,7 @@ done
 
 # TODO table show last modified date
 FZF_DEFAULT_COMMAND="
-	find $dbs_folder -iname '*.db' \
+	find $SIMPLEQL_DBS_DIR -iname '*.db' \
 	-execdir basename -s '.sh' {} + | \
 	sed '1i file' | column -t" \
 fzf \
@@ -74,8 +77,8 @@ fzf \
 	--height 60% \
 	--prompt "sqlite> " \
 	--header $'╱ enter (load); ctrl-d (delete)╱\n\n' \
-		--bind "enter:execute(tmux send-keys 'sqlite3 $dbs_folder/{1}' Enter)+abort" \
-		--bind "ctrl-d:execute(rm $dbs_folder/{1})+abort" \
+		--bind "enter:execute(tmux send-keys 'sqlite3 $SIMPLEQL_DBS_DIR/{1}' Enter)+abort" \
+		--bind "ctrl-d:execute(rm $SIMPLEQL_DBS_DIR/{1})+abort" \
 		--bind 'ctrl-space:toggle-preview' \
 	--preview-window right,hidden,60% \
 	--preview '' "$@"

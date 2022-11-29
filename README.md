@@ -2,10 +2,22 @@
 
 - quick cli tool to manage sqlite databases
 
+## Quick Start
+
+- If creating a single table we can use only .csv file, because there are not relations nor foreing keys
+
+1. set $SIMPLEQL_DEFAULT_DB name in .envrc
+2. run `./simpleql -h` to see the options
+3. create a $tablename.csv (with headers) inside $SIMPLEQL_DEFAULT_DB/values directory
+4. run ./simpleql -i $tablename.csv
+5. run ./simpleql -s $tablename to check the inserted values
+
+## Known Issues
+
+- every option throws an 'unknown option' message
+
 ### TODO
 
 - [ ] create initial database script from a visual object,
      - webpage draw.io like
       - cli ask-menu/?fzf + show as table with relations
-- [ ] try to update table if values of .csv already exist, for when we change a field
-- [ ] argument to pass location where to save de .db file if it doesn't exist
